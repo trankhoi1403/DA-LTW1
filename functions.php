@@ -253,5 +253,5 @@ function resizeImage($filename, $max_width, $max_height)
 	return $image_p;
 }
 
-ob_end_flush(); // xóa các kí tự lạ cuối file
+ob_end_flush(); // xóa các kí tự lạ cuối File
 ?>
