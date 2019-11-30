@@ -1,0 +1,25 @@
+<?php
+ ob_start(); 
+  require_once ('init.php');
+  require_once ('functions.php');
+?>
+
+<?php 
+  include 'check-before-login.php';
+  include 'header.php';
+?>
+	<div class="container">
+		<h1>Chào mung <?php echo $currentUser['fullname'] ?> dã quay tra loi</h1>
+		<form method="POST" action="create-post.php">
+			<div class="form-group">
+				<textarea class="form-control" rows="3" id="post" name="content" placeholder="Ban dang nghi gì ?"></textarea>
+			</div>
+			
+				
+
+		</form>
+		<?php 
+			$stmt = $db->prepare("SELECT * FROM mypost p, myuser u WHERE p.userID = u.userID ORDER BY p.postID DESC");
+			$stmt->execute();
+			$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		?>
