@@ -39,15 +39,21 @@ require_once 'functions.php';
         $stmt->execute(array($email));
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
     ?>
-        <?php if (password_verify($password, $row['password']) && $row['status'] == 1): ?>
-        <?php
-                //var_dump($row);
-                $_SESSION['userID'] = $row['userID'];
-                header('Location: index.php');
-        ?>
-        <?php else: ?> 
+        <?php if ($row['status'] == 1): ?>    
+            <?php if (password_verify($password, $row['password'])): ?>
+            <?php
+                    //var_dump($row);
+                    $_SESSION['userID'] = $row['userID'];
+                    header('Location: index.php');
+            ?>
+            <?php else: ?> 
+                <div class="alert alert-danger" role="alert">
+                    Đăng nhập thất bại
+                </div>
+            <?php endif; ?>
+        <?php else: ?>
             <div class="alert alert-danger" role="alert">
-                Đăng nhập thất bại
+                Bạn chưa kích hoạt tài khoản<br>Vui lòng kiểm tra email và làm theo hướng dẫn
             </div>
         <?php endif; ?>
     <?php endif; ?>

@@ -10,6 +10,63 @@ include "PHPMailer-master/src/SMTP.php";
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+
+// trả về số lượng các lời mời kết bạn được nhận
+function totalFriendRequest($userID){
+	global $db;
+	$stmt = $db->prepare("SELECT * FROM friends WHERE userIDRecive=? and status=?");
+	$stmt->execute(array($userID, false));
+    $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return sizeof($row);
+}
+
+// trả về những người đã gửi lời mời kết bạn cho mình
+function totalUserFriendRequest($userID){
+	global $db;
+	$stmt = $db->prepare("	SELECT userIDSend
+							FROM friends 
+							WHERE 	userIDRecive=?
+									and status=?");
+	$stmt->execute(array($userID, false));
+    $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $row;
+}
+
+// kiểm tra xem có đang chờ kết bạn từ một ai đó
+function isFriendRequest($userIDSend, $userIDRecive){
+	global $db;
+	$stmt = $db->prepare("SELECT * FROM friends WHERE userIDSend=? and userIDRecive=? and status=?");
+	$stmt->execute(array($userIDSend, $userIDRecive, false));
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($row == null) {
+    	return false;
+    }
+    else{
+    	return true;
+    }
+}
+
+// gửi lời mời kết bạn
+function sendFriendRequest($userIDSend, $userIDRecive){
+	$stmt = $GLOBALS["db"]->prepare("insert into friends(userIDSend, userIDRecive, status, timecreate) values (?,?,?,now())");
+	$sucess = $stmt->execute(array($userIDSend, $userIDRecive, false));
+	return $sucess;
+}
+
+// hủy lời mời kết bạn
+function cancelFriendRequest($userIDSend, $userIDRecive){
+	global $db;
+	$stmt = $db->prepare("DELETE FROM friends WHERE userIDSend=? and userIDRecive=? and status=?");
+	$stmt->execute(array($userIDSend, $userIDRecive, false));
+}
+
+// chấp nhận lời mời từ một ai đó
+function acceptFriendRequest($userIDSend, $userIDRecive){
+	global $db;
+	$stmt = $db->prepare("UPDATE friends SET status=?, timecreate=now() WHERE userIDSend=? and userIDRecive=?");
+	$stmt->execute(array(true, $userIDSend, $userIDRecive));
+}
+
 function sendMail($email, $subject ,$htmlContent){
 	$mail = new PHPMailer(true);                              // Passing `true` enables exceptions
 	try {
@@ -117,6 +174,33 @@ function unsetCurrentUser(){
 function resetPassword($newpass){
     $stmt = $GLOBALS['db']->prepare("UPDATE myuser SET password = ? AND status = ? WHERE status = ?");
     $stmt->execute(array(password_hash($newpass, PASSWORD_DEFAULT), 1, 2));
+}
+
+function getUserByID($id){
+	$stmt = $GLOBALS['db']->prepare("SELECT * FROM myuser WHERE userID = ?");
+	$stmt->execute(array($id));
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+	
+	$_SESSION['last_activity'] = time();
+
+/*	setcookie('userID',  $userID , time()+3600);
+	setcookie('email',  $row['email'] , time()+3600);
+	setcookie('password',  $row['password'] , time()+3600);
+	setcookie('username',  $row['username'] , time()+3600);
+	setcookie('fullname',  $row['fullname'] , time()+3600);
+	setcookie('phonenumber',  $row['phonenumber'] , time()+3600);
+	setcookie('avatar',  $row['avatar'] , time()+3600);*/
+
+	$currentUser['userID'] = $row['userID'];
+	$currentUser['status'] = $row['status'];
+	$currentUser['email'] = $row['email'];
+	$currentUser['password'] = $row['password'];
+	$currentUser['username'] = $row['username'];
+	$currentUser['fullname'] = $row['fullname'];
+	$currentUser['phonenumber'] = $row['phonenumber'];
+	$currentUser['avatar'] = $row['avatar'];
+	$currentUser['code'] = $row['code'];
+	return $currentUser;
 }
 
 function getCurrentUser(){

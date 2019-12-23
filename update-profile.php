@@ -44,8 +44,6 @@ require_once 'functions.php';
                 var_dump($newfile);
             }
         }
-
-
         //$row = $stmt->fetch(PDO::FETCH_ASSOC);
         //header("Refresh:0");
     ?>
@@ -56,42 +54,42 @@ require_once 'functions.php';
     <h1 style{ align="center";}>Cập nhật thông tin cá nhân</h1>
     <div style{ align="right";}>
         <form method="POST" action="update-profile.php" enctype="multipart/form-data">
-        <div class="form-group row">
-            <label for="inputEmail3" class="col-sm-2 col-form-label">Tên người dùng</label>
-            <div class="col-sm-8">
-                <input type="text" class="form-control" id="inputusername" name="username" value=<?php echo $currentUser['username']?>>
+            <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-2 col-form-label">Tên người dùng</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="inputusername" name="username" value=<?php echo $currentUser['username']?>>
+                </div>
             </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputEmail3" class="col-sm-2 col-form-label">Họ tên đầy đủ</label>
-            <div class="col-sm-8">
-                <input type="text" class="form-control" id="inputfullname" name="fullname" value="<?php echo $currentUser['fullname'];?>">
+            <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-2 col-form-label">Họ tên đầy đủ</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="inputfullname" name="fullname" value="<?php echo $currentUser['fullname'];?>">
+                </div>
             </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputEmail3" class="col-sm-2 col-form-label">Số điện thoại</label>
-            <div class="col-sm-8">
-                <input type="tel" class="form-control" id="inputphonenumber" name="phonenumber" value=<?php echo $currentUser['phonenumber']?>>
+            <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-2 col-form-label">Số điện thoại</label>
+                <div class="col-sm-8">
+                    <input type="tel" class="form-control" id="inputphonenumber" name="phonenumber" value=<?php echo $currentUser['phonenumber']?>>
+                </div>
             </div>
-        </div>
-        <div class="form-group row">
-            <label for="avatar" class="col-sm-2 col-form-label">Ảnh đại diện</label>
-            <div class="col-sm-3">
-                <div class="card" style="width: 28rem;">
-                    <img class="card-img-top" src="<?php echo $currentUser['avatar']?>" alt="Card image cap">
-                    <div class="card-body">
-                        <p class="card-text">
-                            <input type="file" id="avatar" name="avatar">
-                        </p>
+            <div class="form-group row">
+                <label for="avatar" class="col-sm-2 col-form-label">Ảnh đại diện</label>
+                <div class="col-sm-3">
+                    <div class="card" style="width: 28rem;">
+                        <img class="card-img-top" src="<?php echo $currentUser['avatar']?>" alt="Card image cap">
+                        <div class="card-body">
+                            <p class="card-text">
+                                <input type="file" id="avatar" name="avatar">
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="form-group row">
-            <div class="col-sm-3">
-            <button type="submit" class="btn btn-primary">Cập nhật</button>
+            <div class="form-group row">
+                <div class="col-sm-3">
+                <button type="submit" class="btn btn-primary">Cập nhật</button>
+                </div>
             </div>
-        </div>
         </form>
     </div>
     <?php endif; ?>

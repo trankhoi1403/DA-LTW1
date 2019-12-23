@@ -31,10 +31,16 @@
 					 <div class="card-body">
 					 	<div style="margin-bottom: 20px;">
 						 	<img src="<?php echo $row['avatar']?>" alt="Avatar" class="avatar" style="float: left; border-radius: 20%; margin-right: 10px;">
-							<h3><?php echo  $row['fullname']; ?></h3>					 		
+							<a href="trang-ca-nhan.php?userID=<?php echo $row['userID'];?>">
+								<h3><?php echo  $row['fullname']; ?></h3>
+							</a>
 							<p>Đăng lúc <?php echo  $row['timecreate']; ?></p>
 					 	</div>
 						<textarea class="form-control" rows="<?php echo getTotalLine($row['content']); ?>" readonly="readonly"><?php echo  $row['content']; ?></textarea>
+						<p style="margin-top: 10px;">Chưa có lượt thích</p>
+						<button onclick="btnLike_Click(<?php echo $row['postID']; ?>, <?php echo $currentUser['userID']; ?>)" 
+								class="btn btn-outline-primary btn-sm" 
+								style="margin-top: 10px">Thích</button>
 					 </div>
 				</div>
 		<?php endforeach;?>
