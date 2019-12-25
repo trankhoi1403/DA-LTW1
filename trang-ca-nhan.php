@@ -24,12 +24,37 @@ require_once 'functions.php';
 				<?php if ($getUser['userID'] == $currentUser['userID']): ?>
 					<a href="update-profile.php" class="btn btn-primary">Cập nhật thông tin</a>
 				<?php else: ?>
-					<a href="guiHoacXoaLoiMoi.php?userIDSend=<?php echo $currentUser['userID']?>&userIDRecive=<?php echo $getUser['userID']?>" 
+					<?php $rela = checkRelationship($currentUser['userID'], $getUser['userID']); ?>
+
+					<a href="xulyFriends.php?currentUserID=<?php echo $currentUser['userID']?>&userID=<?php echo $getUser['userID']?>&rela=<?php echo $rela?>" 
 						class="btn btn-primary"
 						id="btnAddFr">
-						<?php echo isFriendRequest($currentUser['userID'], $getUser['userID']) == false ? "Kết bạn": "Đã gửi lời mời"?>
-					</a>
-					<a href="update-profile.php" class="btn btn-primary" id="btnFollow">Theo dõi</a>
+						<?php 
+							//var_dump($rela);
+							switch ($rela) {
+								case 'NotFriend':
+									echo "Kết bạn";
+									break;
+								case 'Friend':
+									echo "Bạn bè";
+									break;
+								case 'currentWaitingForAccept':
+									echo "Đã gửi lời mời";
+									break;
+								case 'currentReciveFriendRequest':
+									echo "Chấp nhận lời mời";
+									break;
+								default:
+									echo "lỗi";
+									break;
+							}
+						?>
+					</a>						
+					<?php if ($rela == "currentReciveFriendRequest"): ?>
+						<a href="trang-ca-nhan.php?currentUserID=<?php echo $currentUser['userID']?>&userID=<?php echo $getUser['userID']?>&rela=<?php echo $rela?>&deny=true" class="btn btn-primary" id="btnDeny">Từ chối</a>
+					<?php else: ?>
+						<a href="trang-ca-nhan.php" class="btn btn-primary" id="btnDeny">Theo dõi</a>
+					<?php endif; ?>
 				<?php endif; ?>
 			</div>
 		</div>

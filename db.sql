@@ -37,7 +37,6 @@ alter table friends add foreign key(userIDRecive) references myuser(userID);
 CREATE TABLE likes(
 	postID int,  	-- post mà người dùng like
 	userID int, 	-- người like post đó
-	content text,
 	timecreate datetime,
 	PRIMARY key (postID, userID)
 );

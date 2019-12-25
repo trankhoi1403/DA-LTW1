@@ -27,6 +27,12 @@
 		?>
 		<?php	
 			foreach ($rows as $row) :?>
+				<?php
+					$plikeID = (string)("plike" . $row['postID']); 
+					$fcmtID = (string)("fcmt" . $row['postID']);	// form cmt
+					$dcmtID = (string)("dcmt" . $row['postID']);	// thẻ div chứa danh sách các cmt
+					$tcmtID = (string)("tcmt" . $row['postID']);	// ô text để nhập cmt
+				?>
 				<div class="card" style="margin-top: 10px; border: 2px solid grey; border-radius: 10px;">
 					 <div class="card-body">
 					 	<div style="margin-bottom: 20px;">
@@ -34,13 +40,51 @@
 							<a href="trang-ca-nhan.php?userID=<?php echo $row['userID'];?>">
 								<h3><?php echo  $row['fullname']; ?></h3>
 							</a>
-							<p>Đăng lúc <?php echo  $row['timecreate']; ?></p>
+							<p>Đăng lúc <?php echo date_format(date_create($row['timecreate']),"d/m/Y H:i:s"); ?></p>
 					 	</div>
 						<textarea class="form-control" rows="<?php echo getTotalLine($row['content']); ?>" readonly="readonly"><?php echo  $row['content']; ?></textarea>
-						<p style="margin-top: 10px;">Chưa có lượt thích</p>
-						<button onclick="btnLike_Click(<?php echo $row['postID']; ?>, <?php echo $currentUser['userID']; ?>)" 
-								class="btn btn-outline-primary btn-sm" 
-								style="margin-top: 10px">Thích</button>
+						<p style="margin-top: 10px;" id="<?php echo $plikeID;?>">
+							<?php
+								$tongLike = totalLike($row['postID']);	
+								if ($tongLike == 0) {
+									echo "Chưa có lượt thích";
+								}
+								else {
+									echo "Có " . $tongLike . " người đã thích bài viết này";
+								}								
+							?>
+						</p>
+						<form id="<?php echo $fcmtID;?>">
+							<div class="form-group">
+								<div class="col-sm-2" style="float: left;">
+									<button onclick="btnLike_Click(event)"
+											class="<?php echo $plikeID;?> btn btn-outline-primary btn" 
+											style="float: left;
+													width: 100px;"
+											type="button">
+										<?php 
+											if (checkLike($row['postID'], $currentUser['userID'])){
+												echo "Bỏ thích";
+											}
+											else {
+												echo "Thích";
+											}
+										?>					
+									</button>
+								</div>
+								<div class="col-sm-7" style="float: left;">
+									<textarea class="form-control" rows="1" style="width: 600px;float: left;" id="<?php echo $tcmtID ?>" name="cmtContent" placeholder="Bình luận"></textarea>
+								</div>
+								<div class="col-sm-1" style="float: left;">
+									<button type="button" onclick="btnCmt_Click(event)" class="<?php echo $fcmtID;?> btn btn-primary">Đăng</button>
+								</div>
+								<div id="<?php echo $dcmtID; ?>" style="float: left;width: 100%; margin: 20px 0px 0px 200px">
+									<?php 
+										echo inDSCmtHTML($row['postID']);								
+									?>
+								</div>
+							</div>
+						</form>		
 					 </div>
 				</div>
 		<?php endforeach;?>

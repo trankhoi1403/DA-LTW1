@@ -4,13 +4,19 @@
 	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-	<script language="javascript" src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
+	<script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
 	<style type="text/css">
 		h1 {
 			text-align: center;
 		}
 		body {
 			margin-top: 60px;
+		}
+		.container {
+			margin-bottom: 60px;
 		}
 		.avatar {
 			vertical-align: middle;
@@ -31,6 +37,7 @@
 
 		.main {
 			margin-left: 18rem; /* Same width as the sidebar + left position in px */
+			margin-bottom: 60px;
 			padding: 0px 10px;
 		}
 
@@ -39,57 +46,6 @@
 			.sidenav a {font-size: 18px;}
 		}
 	</style>
-	<script>
-		// kiểm tra inputPassword có trùng khớp với phần ô nhập lại reInputPassword không
-		function checkRePassword(inputPassword, reInputPassword) {
-			console.log('vào hàm checkRePassword');
-			var pass = document.getElementById(inputPassword);
-			var rePass = document.getElementById(reInputPassword);
-			if (pass.value != rePass.value) {
-				alert("Password không trùng khớp, nhập lại password");
-				rePass.focus();
-				return false;
-			}
-			else{
-				return true;
-			}
-		}
-		// kiểm tra độ mạnh yếu của pass và thể hiện ra bằng passState (là id của một label)
-		function checkPasswordState(pass, passState) {
-			console.log('Vào hàm checkPasswordState');
-			var pass = document.getElementById(pass);
-			var state = document.getElementById(passState);
-			if (pass.value.length < 3) {
-				state.innerHTML = "Yếu";
-				state.style.color = 'red';
-			}
-			else if (pass.value.length < 6) {
-				state.innerHTML = "Trung bình";
-				state.style.color = 'blue';
-			}
-			else{
-				state.innerHTML = "Mạnh";
-				state.style.color = 'green';
-			}
-		}
-
-		// xử lý việc người dùng nhấn nút like
-		function btnLike_Click($postID, $userID){
-
-		}
-
-		// xử lý việc gửi lời mời kết bạn
-		function btnAddFr_Click($userIDSend, $userIDRecive){
-			$btn = document.getElementById('btnAddFr');
-			
-			alert($userIDSend);
-			alert($userIDRecive);
-			
-			$btn.innerHTML = "Đã gửi lời mời kết bạn";
-			$btn.className = "btn btn-secondary disabled";
-			$btn.state = disabled;
-		}
-	</script>
 </head>
 <body class="container-fluid">
 	<div>

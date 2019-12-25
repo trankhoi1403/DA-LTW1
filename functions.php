@@ -11,6 +11,76 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 
+function insertCmtForPost($postID, $userID, $content){
+	global $db;
+	$stmt = $db->prepare("INSERT INTO comments(postID, userID, content, timecreate) values (?, ?, ?, now())");
+	$stmt->execute(array($postID, $userID, $content));
+}
+
+function loadCmtForPost($postID){
+	global $db;
+	$stmt = $db->prepare("SELECT *
+							FROM comments c, myuser u
+							WHERE 	c.userID = u.userID and
+									postID=?
+							Order by c.timecreate");
+	$stmt->execute(array($postID));
+	return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// xuất danh sách các comment dưới dạng html
+function inDSCmtHTML($postID){
+	$rows = loadCmtForPost($postID);
+	$result = "";
+	foreach ($rows as $row) {
+		$time = date_format(date_create($row['timecreate']),"d/m/Y H:i:s");
+		$uid = $row['userID'];
+		$fname = $row['fullname'];
+		$content = $row['content'];
+		$result = $result . "<p style='width: 800px;'>" . $time . " <strong><a href='trang-ca-nhan.php?userID=" . $uid . "'>" . $fname . "</a></strong> : " . $content . "</p>";
+	}
+	return $result;
+}
+
+// kiểm tra xem ai đó có like bài viết đó hay không
+function checkLike($postID, $userID){
+	global $db;
+	$stmt = $db->prepare("SELECT *
+						 	FROM likes
+						 	WHERE postID=? and userID=?");
+	$stmt->execute(array($postID, $userID));
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($row == null) {
+    	return false;
+    }
+    else {
+    	return true;
+    }
+}
+
+// tính tổng số like của một bài viết
+function totalLike($postID){
+	global $db;
+	$stmt = $db->prepare("SELECT count(*) as 'total'
+						 	FROM likes
+						 	WHERE postID=?");
+	$stmt->execute(array($postID));
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row['total'];
+}
+
+function setLikeForPost($postID, $userID, $likeValue){
+	global $db;
+	if ($likeValue == 'true') {
+		$stmt = $db->prepare("INSERT INTO likes(postID, userID, timecreate) values (?, ?, now())");
+		$stmt->execute(array($postID, $userID));
+	}
+	else if ($likeValue == 'false') {
+		$stmt = $db->prepare("DELETE FROM likes WHERE postID=? and userID=?");
+		$stmt->execute(array($postID, $userID));
+	}
+}
+
 // trả về số lượng các lời mời kết bạn được nhận
 function totalFriendRequest($userID){
 	global $db;
@@ -46,25 +116,69 @@ function isFriendRequest($userIDSend, $userIDRecive){
     }
 }
 
-// gửi lời mời kết bạn
-function sendFriendRequest($userIDSend, $userIDRecive){
+// current gửi lời mời kết bạn
+function sendFriendRequest($currentUserID, $userID){
 	$stmt = $GLOBALS["db"]->prepare("insert into friends(userIDSend, userIDRecive, status, timecreate) values (?,?,?,now())");
-	$sucess = $stmt->execute(array($userIDSend, $userIDRecive, false));
+	$sucess = $stmt->execute(array($currentUserID, $userID, false));
 	return $sucess;
 }
 
-// hủy lời mời kết bạn
-function cancelFriendRequest($userIDSend, $userIDRecive){
+// current hủy lời mời kết bạn của mình tới ai đó
+function cancelFriendRequest($currentUserID, $userID){
 	global $db;
-	$stmt = $db->prepare("DELETE FROM friends WHERE userIDSend=? and userIDRecive=? and status=?");
-	$stmt->execute(array($userIDSend, $userIDRecive, false));
+	$stmt = $db->prepare("DELETE FROM friends WHERE userIDSend=? and userIDRecive=? and status=false");
+	$stmt->execute(array($currentUserID, $userID));
 }
 
-// chấp nhận lời mời từ một ai đó
-function acceptFriendRequest($userIDSend, $userIDRecive){
+// current chấp nhận lời mời từ một ai đó
+function acceptFriendRequest($currentUserID, $userID){
 	global $db;
-	$stmt = $db->prepare("UPDATE friends SET status=?, timecreate=now() WHERE userIDSend=? and userIDRecive=?");
-	$stmt->execute(array(true, $userIDSend, $userIDRecive));
+	$stmt = $db->prepare("UPDATE friends SET status=true , timecreate=now() WHERE userIDSend=? and userIDRecive=?");
+	$stmt->execute(array($userID, $currentUserID));
+}
+
+// hủy kết bạn
+function cancelFriend($currentUserID, $userID){
+	global $db;
+	$stmt = $db->prepare("DELETE FROM friends WHERE userIDSend=? and userIDRecive=?");
+	$stmt->execute(array($currentUserID, $userID));
+	$stmt->execute(array($userID, $currentUserID));
+}
+
+// kiểm tra quan hệ giữa hai người
+function checkRelationship($currentUserID, $userID){
+
+	// kiểm tra xem người 1 có gửi lời mời cho người 2 hay hong
+	global $db;
+	$stmt = $db->prepare("SELECT * FROM friends WHERE userIDSend=? and userIDRecive=?");
+	$stmt->execute(array($currentUserID, $userID));
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);	// chỉ lấy ra dòng đầu tiên
+    if ($row != null) {
+    	if ($row['status'] == true) {
+    		return "Friend";
+    	}
+    	else{
+    		return "currentWaitingForAccept";
+    	}
+    }
+    else{
+
+    	// kiểm tra ngược lại coi người kia có gửi lời mời cho current ko  
+		$stmt = $db->prepare("SELECT * FROM friends WHERE userIDSend=? and userIDRecive=?");
+		$stmt->execute(array($userID, $currentUserID));
+	    $row = $stmt->fetch(PDO::FETCH_ASSOC);	// chỉ lấy ra dòng đầu tiên
+		if ($row != null) {
+			if ($row['status'] == true) {
+				return "Friend";
+			}
+			else{
+				return "currentReciveFriendRequest";
+			}
+		}
+		else{
+	    	return "NotFriend";
+		}   
+    }
 }
 
 function sendMail($email, $subject ,$htmlContent){
