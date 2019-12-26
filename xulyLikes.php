@@ -16,17 +16,24 @@ require_once 'functions.php';
 	$likeValue = $_GET['likeValue'];
 	setLikeForPost($postID, $currentUser['userID'], $likeValue);
 
-	$tongLike = totalLike($postID);	
+	$tongLike = totalLike($row['postID']);	
 	if ($tongLike == 0) {
-		$result = "Chưa có lượt thích";
+		echo "Chưa có lượt thích";
 	}
 	else {
-		$result = "Có " . $tongLike . " người đã thích bài viết này";
+		$currentLike = checkLike($row['postID'], $currentUser['userID']);
+		if ($currentLike) {
+			if ($tongLike == 1) {
+				echo "Bạn đã thích bài viết này";
+			}
+			else {
+				echo "Bạn và " . (string)($tongLike - 1) . " người khác đã thích bài viết này";
+			}
+		}
+		else {
+			echo "Có " . $tongLike . " người đã thích bài viết này";
+		}
 	}
-?>
-
-<?php 
-	echo $result;
 ?>
 
 <?php

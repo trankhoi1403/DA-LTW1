@@ -6,6 +6,16 @@
 	</div>
 	
 	<script>
+
+		// ------------ TIN NHẮN ----------------
+		$(document).ready(function(){
+				$('#action_menu_btn').click(function(){
+						$('.action_menu').toggle();
+				});
+		});
+		// ------------ TIN NHẮN ----------------
+
+
 		// kiểm tra inputPassword có trùng khớp với phần ô nhập lại reInputPassword không
 		function checkRePassword(inputPassword, reInputPassword) {
 			console.log('vào hàm checkRePassword');
@@ -37,6 +47,24 @@
 				state.innerHTML = "Mạnh";
 				state.style.color = 'green';
 			}
+		}
+
+		function privacyChanged(event, postID){
+			var selectPrivacy = event.target;
+			var privacy = selectPrivacy.value;
+	        $.ajax({
+	            url : "update-post.php", // gửi ajax đến file result.php
+	            type : "get", // chọn phương thức gửi là get
+	            dateType:"text", // dữ liệu trả về dạng text
+	            data : { // Danh sách các thuộc tính sẽ gửi đi
+	                 postID: postID,
+	                 privacy: privacy
+	            },
+	            success : function (){
+            		alert('Thay đổi thành công');
+	            }
+	        });			
+
 		}
 
 		// xử lý việc người dùng nhấn nút like

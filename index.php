@@ -10,13 +10,22 @@
 ?>
 	<div class="container">
 		<h1>Chào mừng <?php echo $currentUser['fullname'] ?> đã quay trở lại</h1>
-		<form method="POST" action="create-post.php">
+		<form method="POST" action="create-post.php" enctype="multipart/form-data">
 			<div class="form-group">
-				<textarea class="form-control" rows="3" id="post" name="content" placeholder="Bạn đang nghĩ gì ?"></textarea>
-			</div>
-			<div class="form-group row">
-				<div class="col-sm-3">
-					<button type="submit" class="btn btn-primary">Đăng</button>
+				<textarea style="width: 80%;" class="form-control" rows="3" id="post" name="content[]" placeholder="Bạn đang nghĩ gì ?"></textarea>
+				<div class="custom-file">
+					<input type='file' id="i_file" name='hinhanh[]' multiple>
+				</div>
+				<div>
+					<label for="selectPrivacy">Chế độ: </label>	
+					<select id="selectPrivacy" name="privacy">
+						<option value="private" >Riêng tư</option>
+						<option value="friend" >Bạn bè</option>
+						<option value="public" selected>Công khai</option>
+					</select>
+				</div>
+				<div>
+					<button name="submit" type="submit" class="btn btn-primary">Đăng bài viết</button>
 				</div>
 			</div>
 		</form>
@@ -32,8 +41,34 @@
 					$fcmtID = (string)("fcmt" . $row['postID']);	// form cmt
 					$dcmtID = (string)("dcmt" . $row['postID']);	// thẻ div chứa danh sách các cmt
 					$tcmtID = (string)("tcmt" . $row['postID']);	// ô text để nhập cmt
+					$privacy = $row['privacy'];			// lấy quyền riêng tư của bài viết
+					$follow = checkFollow($row['userID'], $currentUser['userID']);	// biến kiểm tra xem current có theo dõi người dùng đó ko
+
+					if ($row['userID'] != $currentUser['userID']) {
+						
+						// nếu như nd ko theo dõi thằng đó và bài viết không công khai thì nó không coi được
+						if ($follow == false && $privacy != 'public') {
+							continue;
+						}	
+						// nếu như bài viết đó riêng tư thì bỏ qua
+						if ($privacy == 'private') {
+							continue;
+						}
+						// nếu như bài viết bạn bè mà người dùng không là bạn bè với người đó thì cũng bỏ qua
+						else if ($privacy == 'friend' && isFriend($currentUser['userID'], $row['userID']) == false) {
+							continue;
+						}
+						
+						// các bài công khai được phép hiện
+
+					}
+					else {
+						// các bài viết của người dùng đó được hiển thị
+					}
+
 				?>
-				<div class="card" style="margin-top: 10px; border: 2px solid grey; border-radius: 10px;">
+
+				<div class="card" style="margin-top: 10px; border: 2px solid grey; border-radius: 10px; height: auto;">
 					 <div class="card-body">
 					 	<div style="margin-bottom: 20px;">
 						 	<img src="<?php echo $row['avatar']?>" alt="Avatar" class="avatar" style="float: left; border-radius: 20%; margin-right: 10px;">
@@ -41,8 +76,20 @@
 								<h3><?php echo  $row['fullname']; ?></h3>
 							</a>
 							<p>Đăng lúc <?php echo date_format(date_create($row['timecreate']),"d/m/Y H:i:s"); ?></p>
+							<select <?php 
+										$cuaCurrent = checkPostOfUser($row['postID'], $currentUser['userID']);
+										echo ($cuaCurrent == 'true' ? '' : 'disabled');
+									?>
+									onchange="privacyChanged(event,'<?php echo $row['postID'];?>')"
+									onfocus="this.selectedIndex = -1; this.blur();">
+								<option value="private" <?php echo ($privacy == 'private' ? 'selected' : ' ') ;?>>Riêng tư</option>
+								<option value="friend" <?php echo ($privacy == 'friend' ? 'selected' : ' ') ;?>>Bạn bè</option>
+								<option value="public" <?php echo ($privacy == 'public' ? 'selected' : ' ') ;?>>Công khai</option>
+							</select>
 					 	</div>
-						<textarea class="form-control" rows="<?php echo getTotalLine($row['content']); ?>" readonly="readonly"><?php echo  $row['content']; ?></textarea>
+						<textarea class="form-control" rows="<?php echo getTotalLine($row['content']); ?>" readonly="readonly"><?php echo $row['content']; ?>
+						</textarea>
+						<?php echo inDSPicPostHTML($row['postID']); ?>
 						<p style="margin-top: 10px;" id="<?php echo $plikeID;?>">
 							<?php
 								$tongLike = totalLike($row['postID']);	
@@ -50,7 +97,18 @@
 									echo "Chưa có lượt thích";
 								}
 								else {
-									echo "Có " . $tongLike . " người đã thích bài viết này";
+									$currentLike = checkLike($row['postID'], $currentUser['userID']);
+									if ($currentLike) {
+										if ($tongLike == 1) {
+											echo "Bạn đã thích bài viết này";
+										}
+										else {
+											echo "Bạn và " . (string)($tongLike - 1) . " người khác đã thích bài viết này";
+										}
+									}
+									else {
+										echo "Có " . $tongLike . " người đã thích bài viết này";
+									}
 								}								
 							?>
 						</p>

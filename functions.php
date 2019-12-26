@@ -10,6 +10,49 @@ include "PHPMailer-master/src/SMTP.php";
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+// kiểm tra xem phải post của người đó hay không
+function checkPostOfUser($postID, $userID){
+	global $db;
+	$stmt = $db->prepare("SELECT * 
+							FROM mypost
+							WHERE postID=? and userID=?");
+	$stmt->execute(array($postID, $userID));
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+	if ($row == null) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+// trả về privacy của bài post()
+function getPrivacy($postID){
+	global $db;
+	$stmt = $db->prepare("SELECT * 
+							FROM mypost
+							WHERE postID = ?");
+	$stmt->execute(array($postID));
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+	return $row['privacy'];
+}
+
+// trả về html các hình ảnh của bài post đó
+//	<img src="pictures/30_0.jpg" style="width: 100px; height: 100px;">
+function inDSPicPostHTML($postID){
+	global $db;
+	$stmt = $db->prepare("SELECT * 
+							FROM post_picture
+							WHERE postID = ?");
+	$stmt->execute(array($postID));
+	$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	$htmlResult = '';
+	foreach ($rows as $row) {
+		$htmlResult = $htmlResult . "<img src='" . $row['picturePath'] . "' style='width: 100px; height: 100px;'>";
+	}
+	return $htmlResult;
+}
 
 function insertCmtForPost($postID, $userID, $content){
 	global $db;
@@ -29,6 +72,8 @@ function loadCmtForPost($postID){
 }
 
 // xuất danh sách các comment dưới dạng html
+//<p style='width: 800px;'><strong><a href='trang-ca-nhan.php?userID=2'>tên gì đó</a></strong>: <abbr title='3:34:4'>fsdf</abbr></p>
+
 function inDSCmtHTML($postID){
 	$rows = loadCmtForPost($postID);
 	$result = "";
@@ -37,10 +82,17 @@ function inDSCmtHTML($postID){
 		$uid = $row['userID'];
 		$fname = $row['fullname'];
 		$content = $row['content'];
-		$result = $result . "<p style='width: 800px;'>" . $time . " <strong><a href='trang-ca-nhan.php?userID=" . $uid . "'>" . $fname . "</a></strong> : " . $content . "</p>";
+		$result = $result . 
+		"<p style='width: 800px;'>
+			<strong>
+				<a href='trang-ca-nhan.php?userID=" . $uid . "'>" . $fname . "</a>
+			</strong> : " . 
+			"<abbr title='" . "Đã bình luận lúc " . $time . "'>" . $content . "</abbr>
+		</p>";
 	}
 	return $result;
 }
+//		<abbr title='3:34:4'><p style='width: 800px;'><strong><a href='trang-ca-nhan.php?userID=2'>tên gì đó</a></strong> : fsdf</p></abbr>
 
 // kiểm tra xem ai đó có like bài viết đó hay không
 function checkLike($postID, $userID){
@@ -81,6 +133,33 @@ function setLikeForPost($postID, $userID, $likeValue){
 	}
 }
 
+// kiểm tra xem $follwer có theo dõi userID không
+function checkFollow($userID, $follower){
+	global $db;
+	$stmt = $db->prepare("SELECT * FROM follows WHERE userID=? and follower=?");
+	$stmt->execute(array($userID, $follower));
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($row == null) {
+    	return false;
+    }
+    else {
+    	return true;
+    }
+}
+
+// thêm vào db
+function sendFollow($userID, $follower){
+	global $db;
+	$stmt = $db->prepare("INSERT INTO follows(userID, follower, timecreate) values (?, ?, now())");
+	$stmt->execute(array($userID, $follower));
+}
+
+function cancelFollow($userID, $follower){
+	global $db;
+	$stmt = $db->prepare("DELETE FROM follows WHERE userID=? and follower=?");
+	$stmt->execute(array($userID, $follower));
+}
+
 // trả về số lượng các lời mời kết bạn được nhận
 function totalFriendRequest($userID){
 	global $db;
@@ -100,6 +179,22 @@ function totalUserFriendRequest($userID){
 	$stmt->execute(array($userID, false));
     $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
     return $row;
+}
+
+// kiểm tra hai người có là bạn của nhau không
+function isFriend($userIDSend, $userIDRecive){
+	global $db;
+	$stmt = $db->prepare("SELECT * 
+							FROM friends 
+							WHERE status=? and ((userIDSend=? and userIDRecive=?) or (userIDRecive=? and userIDSend=?))");
+	$stmt->execute(array(true, $userIDSend, $userIDRecive, $userIDSend, $userIDRecive));
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($row == null) {
+    	return false;
+    }
+    else{
+    	return true;
+    }
 }
 
 // kiểm tra xem có đang chờ kết bạn từ một ai đó
@@ -372,10 +467,10 @@ function getCurrentUserByCode($code){
 	return $currentUser;
 }
 
-function insertPost($userID, $content){
+function insertPost($userID, $content, $privacy){
     global $db;
-    $stmt = $db->prepare("INSERT INTO mypost(userID, content, timecreate) VALUES (?,?, now())");
-    $stmt->execute(array($userID, $content));
+    $stmt = $db->prepare("INSERT INTO mypost(userID, content, timecreate, privacy) VALUES (?,?, now(), ?)");
+    $stmt->execute(array($userID, $content, $privacy));
     return $db->lastInsertId();
 }
 
@@ -405,6 +500,23 @@ function moveFile($name, $folder, $checkType){
 	$fileTemp = $_FILES[$name]['tmp_name'];
 	$result = move_uploaded_file($fileTemp, $folder . '/' . $fileName);
     return 'true';
+}
+
+// đổi tên file trong đường dẫn filepath thành postID_index (index: thứ tự hình ảnh trong bài post, tính từ 1 trở đi)
+function renamePicturePost($filepath, $postID, $index){
+	if (!file_exists($filepath)) {
+		return "Error: Không tìm thấy đường dẫn " . $filepath;
+	}
+	$arrfilepath = explode('/', $filepath);
+	$file = array_pop($arrfilepath);
+	$filename = explode('.', $file)[0];
+
+	$file = str_replace($filename, $userID, $file);
+
+	array_push($arrfilepath, $file);
+	$newfilepath = implode('/', $arrfilepath);
+	rename($filepath, $newfilepath);
+	return $newfilepath;
 }
 
 function renameAvatar($userID, $filepath){

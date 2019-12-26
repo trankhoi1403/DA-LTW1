@@ -49,11 +49,29 @@ require_once 'functions.php';
 									break;
 							}
 						?>
-					</a>						
+					</a>				
+
+							<!-- nếu như đang chờ kết bạn -->
 					<?php if ($rela == "currentReciveFriendRequest"): ?>
 						<a href="trang-ca-nhan.php?currentUserID=<?php echo $currentUser['userID']?>&userID=<?php echo $getUser['userID']?>&rela=<?php echo $rela?>&deny=true" class="btn btn-primary" id="btnDeny">Từ chối</a>
 					<?php else: ?>
-						<a href="trang-ca-nhan.php" class="btn btn-primary" id="btnDeny">Theo dõi</a>
+						<a href="xulyFollow.php?userID=<?php echo $getUser['userID']?>" class="btn btn-primary" id="btnFollow">
+							<?php
+								if (checkFollow($getUser['userID'], $currentUser['userID'])) {
+									echo "Đã theo dõi";
+								}
+								else{
+									echo "Theo dõi";
+								}
+							?>
+						</a>
+					<?php endif; ?>
+
+							<!-- nếu là bạn thì hiển thị nút nhắn tin -->
+					<?php if ($rela == "Friend"): ?>
+						<a href="messenger.php?userID=<?php echo $getUser['userID']?>" class="btn btn-outline-primary" id="btnMessenger">
+							<img src="icon/messenger.png" style="width: 30px; height: 30px;">
+						</a>
 					<?php endif; ?>
 				<?php endif; ?>
 			</div>

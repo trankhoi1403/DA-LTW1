@@ -28,6 +28,8 @@ require_once 'functions.php';
 				}
 				else {
 					acceptFriendRequest($currentUserID, $userID);	// chấp nhận làm bạn
+					sendFollow($currentUserID, $userID);
+					sendFollow($userID, $currentUserID);			// khi chấp nhận thì sẽ đều theo dõi lẫn nhau
 				}
 				break;
 			case 'NotFriend':

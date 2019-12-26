@@ -20,7 +20,7 @@ require_once 'functions.php';
         // kiểm tra xem dữ liệu có bị trống hay không
         if ($username == '' || $phonenumber == '' || $fullname == '') :?>
         <div class="alert alert-danger" role="alert">
-            Vui lòng nhập đầy đủ dữ liệu con cặc
+            Vui lòng nhập đầy đủ dữ liệu
         </div>    
     <?php exit(); endif;?>
     <?php 

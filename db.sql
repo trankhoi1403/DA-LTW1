@@ -19,9 +19,18 @@ CREATE TABLE mypost(
 	postID int AUTO_INCREMENT PRIMARY KEY,
 	userID int,
 	content text,
-	timecreate datetime
+	timecreate datetime,
+	privacy varchar(10) default 'public'	-- có 3 chế độ: private, friend, public
 );
 alter table mypost add foreign key(userID) references myuser(userID);
+
+-- 1 bài post có nhiều hình ảnh
+CREATE TABLE post_picture(
+	pictureID int AUTO_INCREMENT PRIMARY KEY,
+	postID int,
+	picturePath varchar(255)
+);
+alter table post_picture add foreign key(postID) references mypost(postID);
 
 CREATE TABLE friends(
 	userIDSend int not null,	-- id người gửi lời kết bạn
@@ -33,6 +42,14 @@ CREATE TABLE friends(
 alter table friends add foreign key(userIDSend) references myuser(userID);
 alter table friends add foreign key(userIDRecive) references myuser(userID);
 
+CREATE TABLE follows(
+	userID int not null,	-- người dùng
+	follower int not null,	-- id người theo dõi người dùng đó
+	timecreate datetime, 
+	PRIMARY KEY (userID, follower)
+);
+alter table follows add foreign key(userID) references myuser(userID);
+alter table follows add foreign key(follower) references myuser(userID);
 
 CREATE TABLE likes(
 	postID int,  	-- post mà người dùng like
@@ -52,3 +69,15 @@ CREATE TABLE comments(
 );
 alter table comments add foreign key(userID) references myuser(userID);
 alter table comments add foreign key(postID) references mypost(postID);
+
+
+CREATE TABLE messages(
+	messageID int AUTO_INCREMENT PRIMARY KEY,
+	fromUserID int,  -- post mà người dùng comment vào
+	toUserID int, -- người comment
+	content text,
+	timecreate datetime
+);
+alter table messages add foreign key(fromUserID) references myuser(userID);
+alter table messages add foreign key(toUserID) references myuser(userID);
+
