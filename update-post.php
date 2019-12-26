@@ -5,7 +5,6 @@ require_once 'functions.php';
 
 ?>
 
-
 <?php
 	if (isset($_GET['postID']) && isset($_GET['privacy'])) {
 		$postID = $_GET['postID'];

@@ -81,7 +81,7 @@
 										echo ($cuaCurrent == 'true' ? '' : 'disabled');
 									?>
 									onchange="privacyChanged(event,'<?php echo $row['postID'];?>')"
-									onfocus="this.selectedIndex = -1; this.blur();">
+									onfocus="this.selectedIndex = '-1'; this.blur();">
 								<option value="private" <?php echo ($privacy == 'private' ? 'selected' : ' ') ;?>>Riêng tư</option>
 								<option value="friend" <?php echo ($privacy == 'friend' ? 'selected' : ' ') ;?>>Bạn bè</option>
 								<option value="public" <?php echo ($privacy == 'public' ? 'selected' : ' ') ;?>>Công khai</option>

@@ -13,7 +13,7 @@
 <?php 
 	if (isset($_POST['content'])){
 		$content = $_POST['content'][0];
-		$privacy = $_POST['privacy'][0];
+		$privacy = $_POST['privacy'];
 		if (strlen($content) == 0){
 			echo "Không được để trống status";
 		} else {
@@ -58,7 +58,7 @@
 		        }
 		        echo "Tổng số file upload: " .$numfiles;
 		        echo "Tổng dung lượng: " .$filesSize/(1024*1024) . "MB";
-		        header('Location: index.php');
+		        //header('Location: index.php');
 		    }
 			else{
 			    echo "Lỗi, dung lượng phải nhỏ hơn 20MB";

@@ -1,24 +1,45 @@
-	<div id="footer">
-		<nav class="navbar fixed-bottom navbar-expand-lg navbar-dark bg-light">
-			<h3>© koichen - Student</h3>
-			<cite> MSSV: 1660281</cite>
-		</nav>
+	<div id="footer" style="position: fixed;z-index:9999999;bottom: 0;width: auto;right: 1%;">
+		<h5>© koichen - Student</h3>
+		<cite> MSSV: 1660281</cite>
 	</div>
 	
 	<script>
 
 		// ------------ TIN NHẮN ----------------
-		$(document).ready(function(){
-				$('#action_menu_btn').click(function(){
-						$('.action_menu').toggle();
-				});
-		});
+		window.setInterval(function() {
+		  // dummy element
+			var inputMessage = document.getElementById('inputMessage');
+			// // check for focus
+			// var isFocused = (document.activeElement === inputMessage);
+			// // khi người dùng ko đang nhắn tin thì mới scroll
+			// if (!isFocused) {
+			// 	//location.reload();
+			//}
+
+			var userID = <?php echo $getUser['userID']?>	// id người dùng đang nhắn tin với current
+	        $.ajax({
+	            url : "get-message.php", // gửi ajax đến file result.php
+	            type : "get", // chọn phương thức gửi là get
+	            dateType:"html", // dữ liệu trả về dạng text
+	            data : { // Danh sách các thuộc tính sẽ gửi đi
+	            	userID: userID
+	            },
+	            success : function (result){
+	            	if (result.indexOf("div") !== -1) {
+	            		$('#divChat').append(result);
+					  	var elem = document.getElementById('divChat');
+					  	elem.scrollTop = elem.scrollHeight;
+	            	}
+	            }
+	        });				
+
+		}, 2000);
 		// ------------ TIN NHẮN ----------------
 
 
 		// kiểm tra inputPassword có trùng khớp với phần ô nhập lại reInputPassword không
 		function checkRePassword(inputPassword, reInputPassword) {
-			console.log('vào hàm checkRePassword');
+			console.log('vào hàm checkRePassword');	
 			var pass = document.getElementById(inputPassword);
 			var rePass = document.getElementById(reInputPassword);
 			if (pass.value != rePass.value) {
@@ -49,23 +70,6 @@
 			}
 		}
 
-		function privacyChanged(event, postID){
-			var selectPrivacy = event.target;
-			var privacy = selectPrivacy.value;
-	        $.ajax({
-	            url : "update-post.php", // gửi ajax đến file result.php
-	            type : "get", // chọn phương thức gửi là get
-	            dateType:"text", // dữ liệu trả về dạng text
-	            data : { // Danh sách các thuộc tính sẽ gửi đi
-	                 postID: postID,
-	                 privacy: privacy
-	            },
-	            success : function (){
-            		alert('Thay đổi thành công');
-	            }
-	        });			
-
-		}
 
 		// xử lý việc người dùng nhấn nút like
 		function btnLike_Click(event){

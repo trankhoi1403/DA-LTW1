@@ -81,3 +81,4 @@ CREATE TABLE messages(
 alter table messages add foreign key(fromUserID) references myuser(userID);
 alter table messages add foreign key(toUserID) references myuser(userID);
 
+ALTER TABLE `messages` ADD `hasRead` VARCHAR(10) NOT NULL DEFAULT 'no' AFTER `timecreate`;

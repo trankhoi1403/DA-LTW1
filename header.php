@@ -8,12 +8,31 @@
   src="https://code.jquery.com/jquery-3.4.1.min.js"
   integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
   crossorigin="anonymous"></script>
+  <script type="text/javascript">
+  	
+		function privacyChanged(event, postID){
+			var selectPrivacy = event.target;
+			var privacy = selectPrivacy.value;
+	        $.ajax({
+	            url : "update-post.php", // gửi ajax đến file result.php
+	            type : "get", // chọn phương thức gửi là get
+	            dateType:"text", // dữ liệu trả về dạng text
+	            data : { // Danh sách các thuộc tính sẽ gửi đi
+	                 postID: postID,
+	                 privacy: privacy
+	            },
+	            success : function (){
+            		alert('Thay đổi thành công');
+	            }
+	        });			
+		}
+  </script>
 	<style type="text/css">
 		h1 {
 			text-align: center;
 		}
 		body {
-			margin-top: 60px;
+			margin-top: 70px;
 		}
 		.container {
 			margin-bottom: 60px;
@@ -26,233 +45,54 @@
 		}
 
 		/* ---------------- TIN NHẮN --------------------*/
-			body,html{
-			height: 100%;
-			margin: 0;
-			background: #7F7FD5;
-	       background: -webkit-linear-gradient(to right, #91EAE4, #86A8E7, #7F7FD5);
-	        background: linear-gradient(to right, #91EAE4, #86A8E7, #7F7FD5);
+		/* width */
+	      .scroll{
+            display:block;
+            border: 1px solid red;
+            padding:5px;
+            margin-top:5px;
+            width:300px;
+            height:50px;
+            overflow:scroll;
+         }
+         .auto{
+            display:block;
+            border: none;
+            margin-left: 300px;
+            margin-top: 70px;
+            margin-bottom: 0px;
+            width:50%;
+            height:500px;
+            overflow-y:auto;
+            overflow-x:hidden;
+            background-color: #f5e7e6;
+         }
+         .toMessage{
+         	width: 90%;
+         	float: left;
+         	text-align: left;
+         }
+         .toMessage p {
+         	background-color: #e3dcd5;
+         	border-radius: 5%; 
+         	float: left; 
+         	text-align: left;
 		}
 
-		.chat{
-			margin-top: auto;
-			margin-bottom: auto;
-		}
-		.card{
-			height: 500px;
-			border-radius: 15px !important;
-			background-color: rgba(0,0,0,0.4) !important;
-		}
-		.contacts_body{
-			padding:  0.75rem 0 !important;
-			overflow-y: auto;
-			white-space: nowrap;
-		}
-		.msg_card_body{
-			overflow-y: auto;
-		}
-		.card-header{
-			border-radius: 15px 15px 0 0 !important;
-			border-bottom: 0 !important;
-		}
-	 .card-footer{
-		border-radius: 0 0 15px 15px !important;
-			border-top: 0 !important;
-	}
-		.container{
-			align-content: center;
-		}
-		.search{
-			border-radius: 15px 0 0 15px !important;
-			background-color: rgba(0,0,0,0.3) !important;
-			border:0 !important;
-			color:white !important;
-		}
-		.search:focus{
-		     box-shadow:none !important;
-           outline:0px !important;
-		}
-		.type_msg{
-			background-color: rgba(0,0,0,0.3) !important;
-			border:0 !important;
-			color:white !important;
-			height: 60px !important;
-			overflow-y: auto;
-		}
-			.type_msg:focus{
-		     box-shadow:none !important;
-           outline:0px !important;
-		}
-		.attach_btn{
-	border-radius: 15px 0 0 15px !important;
-	background-color: rgba(0,0,0,0.3) !important;
-			border:0 !important;
-			color: white !important;
-			cursor: pointer;
-		}
-		.send_btn{
-	border-radius: 0 15px 15px 0 !important;
-	background-color: rgba(0,0,0,0.3) !important;
-			border:0 !important;
-			color: white !important;
-			cursor: pointer;
-			width: 50px;
-		}
-		.search_btn{
-			border-radius: 0 15px 15px 0 !important;
-			background-color: rgba(0,0,0,0.3) !important;
-			border:0 !important;
-			color: white !important;
-			cursor: pointer;
-		}
-		.contacts{
-			list-style: none;
-			padding: 0;
-		}
-		.contacts li{
-			width: 100% !important;
-			padding: 5px 10px;
-			margin-bottom: 15px !important;
-		}
-	.active{
-			background-color: rgba(0,0,0,0.3);
-	}
-		.user_img{
-			height: 70px;
-			width: 70px;
-			border:1.5px solid #f5f6fa;
-		
-		}
-		.user_img_msg{
-			height: 40px;
-			width: 40px;
-			border:1.5px solid #f5f6fa;
-		
-		}
-	.img_cont{
-			position: relative;
-			height: 70px;
-			width: 70px;
-	}
-	.img_cont_msg{
-			height: 40px;
-			width: 40px;
-	}
-	.online_icon{
-		position: absolute;
-		height: 15px;
-		width:15px;
-		background-color: #4cd137;
-		border-radius: 50%;
-		bottom: 0.2em;
-		right: 0.4em;
-		border:1.5px solid white;
-	}
-	.offline{
-		background-color: #c23616 !important;
-	}
-	.user_info{
-		margin-top: auto;
-		margin-bottom: auto;
-		margin-left: 15px;
-	}
-	.user_info span{
-		font-size: 20px;
-		color: white;
-	}
-	.user_info p{
-	font-size: 10px;
-	color: rgba(255,255,255,0.6);
-	}
-	.video_cam{
-		margin-left: 50px;
-		margin-top: 5px;
-	}
-	.video_cam span{
-		color: white;
-		font-size: 20px;
-		cursor: pointer;
-		margin-right: 20px;
-	}
-	.msg_cotainer{
-		margin-top: auto;
-		margin-bottom: auto;
-		margin-left: 10px;
-		border-radius: 25px;
-		background-color: #82ccdd;
-		padding: 10px;
-		position: relative;
-	}
-	.msg_cotainer_send{
-		margin-top: auto;
-		margin-bottom: auto;
-		margin-right: 10px;
-		border-radius: 25px;
-		background-color: #78e08f;
-		padding: 10px;
-		position: relative;
-	}
-	.msg_time{
-		position: absolute;
-		left: 0;
-		bottom: -15px;
-		color: rgba(255,255,255,0.5);
-		font-size: 10px;
-	}
-	.msg_time_send{
-		position: absolute;
-		right:0;
-		bottom: -15px;
-		color: rgba(255,255,255,0.5);
-		font-size: 10px;
-	}
-	.msg_head{
-		position: relative;
-	}
-	#action_menu_btn{
-		position: absolute;
-		right: 10px;
-		top: 10px;
-		color: white;
-		cursor: pointer;
-		font-size: 20px;
-	}
-	.action_menu{
-		z-index: 1;
-		position: absolute;
-		padding: 15px 0;
-		background-color: rgba(0,0,0,0.5);
-		color: white;
-		border-radius: 15px;
-		top: 30px;
-		right: 15px;
-		display: none;
-	}
-	.action_menu ul{
-		list-style: none;
-		padding: 0;
-	margin: 0;
-	}
-	.action_menu ul li{
-		width: 100%;
-		padding: 10px 15px;
-		margin-bottom: 5px;
-	}
-	.action_menu ul li i{
-		padding-right: 10px;
-	
-	}
-	.action_menu ul li:hover{
-		cursor: pointer;
-		background-color: rgba(0,0,0,0.2);
-	}
-	@media(max-width: 576px){
-	.contacts_card{
-		margin-bottom: 15px !important;
-	}
-	}
-
+         .fromMessage{
+         	width: 90%; 
+         	float: right;
+         	text-align: right;
+         }
+         .fromMessage p {
+         	background-color: #ed93b3;
+         	border-radius: 5%; 
+         	float: right; 
+         	text-align: right;
+         }
 		/*----------------- TIN NHẮN ---------------------*/
+
+
 		.sidenav {
 			width: 18rem;
 			position: fixed;
@@ -286,7 +126,7 @@
 
 		  <div class="collapse navbar-collapse" id="navbarSupportedContent">
 		    <ul class="navbar-nav mr-auto">
-		      <li class="nav-item <?php echo $page=='index' ? 'active' : '' ?>">
+		      <li class="nav-item <?php echo $page=='index' ? 'active' : '' ?>"  style="margin-left: 10px; margin-top: 8px;">
 		        <a class="nav-link" href="index.php">Trang chủ<span class="sr-only">(current)</span></a>
 		      </li>
 		      <?php if (!isset($_SESSION['userID'])): ?>
@@ -294,25 +134,34 @@
 		        <a class="nav-link" href="login.php">Đăng nhập</a>
 		      </li>
 		      <?php else: ?>
-		   	  <li class="nav-item <?php echo $page=='trang-ca-nhan' ? 'active' : '' ?>">
-		        <a class="nav-link" href="trang-ca-nhan.php?userID=<?php echo $currentUser['userID'];?>" style="padding: 2px 0px 0px 0px;">
+		   	  <li class="nav-item <?php echo $page=='trang-ca-nhan' ? 'active' : '' ?>" style="margin-left: 10px;">
+		        <a class="nav-link" href="trang-ca-nhan.php?userID=<?php echo $currentUser['userID'];?>">
 		        	<img src="<?php echo $currentUser['avatar']?>" alt="Avatar" class="avatar">
 					<?php echo $currentUser['fullname']?>
 		        </a>
 		   	  </li>
-		      <li class="nav-item <?php echo $page=='friend-request' ? 'active' : '' ?>">
-		        <a class="nav-link" href="friend-request.php" style="padding: 2px 0px 0px 0px;">
+		      <li class="nav-item <?php echo $page=='friend-request' ? 'active' : '' ?>" style="margin-left: 10px;">
+		        <?php
+	        		$sl = totalFriendRequest($currentUser['userID']);
+		        ?>
+		        <a class="nav-link" href="friend-request.php" <?php echo ($sl > 0 ? "style='color: red;'" : "") ?>>
 		        	<img src="/icon/friend-request.png" alt="Avatar" class="avatar">
-		        	<?php
-		        		$sl = totalFriendRequest($currentUser['userID']);
-		        		echo "(" . $sl . ")";
-		        	?>
-		        </a>
+		        		<?php echo "(" . $sl . ")"; ?>
+		        </a>	
 		      </li>
-		      <li class="nav-item <?php echo $page=='change-password' ? 'active' : '' ?>">
+		      <li class="nav-item <?php echo $page=='inbox-request' ? 'active' : '' ?>" style="margin-left: 10px;">
+		        <?php
+	        		$sl = totalInboxRequest($currentUser['userID']);
+		        ?>
+		        <a class="nav-link" href="inbox-request.php" <?php echo ($sl > 0 ? "style='color: red;'" : "") ?>>
+		        	<img src="/icon/messenger.png" alt="Avatar" class="avatar">
+		        		<?php echo "(" . $sl . ")"; ?>
+		        </a>	
+		      </li>
+		      <li class="nav-item <?php echo $page=='change-password' ? 'active' : '' ?>"  style="margin-left: 10px; margin-top: 8px;">
 		        <a class="nav-link" href="change-password.php">Đổi mật khẩu</a>
 		      </li>
-		   	  <li class="nav-item <?php echo $page=='logout' ? 'active' : '' ?>">
+		   	  <li class="nav-item <?php echo $page=='logout' ? 'active' : '' ?>"  style="margin-left: 10px; margin-top: 8px;">
 		        <a class="nav-link" href="logout.php">Đăng xuất</a>
 		      </li>
 

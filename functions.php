@@ -10,6 +10,158 @@ include "PHPMailer-master/src/SMTP.php";
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+
+// trả về số lượng tin nhắn mới chưa đọc (hasRead='no')
+function totalInboxRequest($userID){
+	global $db;
+	$stmt = $db->prepare("SELECT * FROM messages WHERE hasRead='no' and toUserID=?");
+	$stmt->execute(array($userID));
+    $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return sizeof($row);
+}
+
+function getMessage($messageID){
+	global $db;
+	$stmt = $db->prepare("SELECT * FROM messages WHERE messageID=?");
+	$stmt->execute(array($messageID));
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row;
+}
+
+// trả về mảng những người đã từng nhắn tin với $userID
+function totalFriendHasSendMessage($userID){
+	global $db;
+    $arrID = array(1);
+    array_pop($arrID);
+
+    // những id mình gửi tin nhắn
+	$stmt = $db->prepare("SELECT toUserID 
+							FROM messages 
+							WHERE fromUserID=?");
+	$stmt->execute(array($userID));
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rows as $row) {
+    	array_push($arrID, $row['toUserID']); 
+    }
+
+    // những id họ gửi cho mình
+	$stmt = $db->prepare("SELECT fromUserID
+							FROM messages 
+							WHERE toUserID=?");
+	$stmt->execute(array($userID));
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rows as $row) {
+    	array_push($arrID, $row['fromUserID']); 
+    }
+
+
+    $arrID = array_unique($arrID);
+    return $arrID;
+}
+
+// lấy tin nhắn (content) mới nhất của hai người
+function layTinNhanMoiNhat($fromUserID, $toUserID){
+	global $db;
+	$stmt = $db->prepare("SELECT * 
+							FROM messages
+							WHERE ((fromUserID=? and toUserID=?) or (toUserID=? and fromUserID=?))
+							ORDER BY timecreate DESC ");
+	$stmt->execute(array($fromUserID, $toUserID, $fromUserID, $toUserID));
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+	return $row;
+}
+
+// trả về một tin nhắn mới nhất
+function getNewMessageHTML($fromUserID, $toUserID){
+	global $db;
+	$stmt = $db->prepare("SELECT * 
+							FROM messages m, myuser u
+							WHERE ((m.fromUserID=? and m.toUserID=?) or (m.toUserID=? and m.fromUserID=?))
+									and m.fromUserID=u.userID
+							ORDER BY timecreate DESC ");
+	$stmt->execute(array($fromUserID, $toUserID, $fromUserID, $toUserID));
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+	$html = '';
+	$content = $row['content'];
+	$avatarPath = $row['avatar'];
+
+	// chỉ lấy dòng mới nhất mà chưa đọc thôi
+	if ($row['hasRead'] == 'no') {
+
+		// nếu như content là của người gửi thì hiển thị bên form người gửi
+		if ($row['fromUserID'] == $fromUserID) {
+			$html = "<div class='row'>
+						  <div class='col-3'></div>
+						  <div class='col-7 fromMessage'>
+						  	<p>" . $content . "</p>
+						  </div>
+						  <div class='col-1'><img src='" . $avatarPath . "' class='avatar'></div>
+				    </div>";
+		}
+		else{
+			$html = "<div class='row'>
+						  <div class='col-1'><img src='" . $avatarPath . "' class='avatar'></div>
+						  <div class='col-7 toMessage'>
+						  	<p>" . $content . "</p>
+						  </div>
+						  <div class='col-3'></div>
+				    </div>";
+		}
+
+			// lấy xong rồi thi đánh dấu là đã đọc rồi
+		$stmt = $db->prepare("UPDATE messages SET hasRead='yes' WHERE messageID=?");
+		$stmt->execute(array($row['messageID']));
+	}
+	return $html;
+}
+
+function loadMessageToHTML($fromUserID, $toUserID){
+	global $db;
+	$stmt = $db->prepare("SELECT * 
+							FROM messages m, myuser u
+							WHERE ((m.fromUserID=? and m.toUserID=?) or (m.toUserID=? and m.fromUserID=?))
+									and m.fromUserID=u.userID
+							ORDER BY timecreate ASC ");
+	$stmt->execute(array($fromUserID, $toUserID, $fromUserID, $toUserID));
+	$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	$result = '';
+	foreach ($rows as $row) {
+		$html = '';
+		$content = $row['content'];
+		$avatarPath = $row['avatar'];
+		// nếu như content là của người gửi thì hiển thị bên form người gửi
+		if ($row['fromUserID'] == $fromUserID) {
+			$html = "<div class='row'>
+						  <div class='col-3'></div>
+						  <div class='col-7 fromMessage'>
+						  	<p>" . $content . "</p>
+						  </div>
+						  <div class='col-1'><img src='" . $avatarPath . "' class='avatar'></div>
+				    </div>";
+		}
+		else{
+			$html = "<div class='row'>
+						  <div class='col-1'><img src='" . $avatarPath . "' class='avatar'></div>
+						  <div class='col-7 toMessage'>
+						  	<p>" . $content . "</p>
+						  </div>
+						  <div class='col-3'></div>
+				    </div>";
+		}
+		$result = $result . "<br>" . $html;
+	}
+
+	return $result;
+}
+
+function insertMessage($fromUserID, $toUserID, $content){
+	global $db;
+	$stmt = $db->prepare("INSERT INTO messages(fromUserID, toUserID, content, timecreate) values (?, ?, ?, now())");
+	$stmt->execute(array($fromUserID, $toUserID, $content));
+}
+
 // kiểm tra xem phải post của người đó hay không
 function checkPostOfUser($postID, $userID){
 	global $db;
@@ -179,6 +331,60 @@ function totalUserFriendRequest($userID){
 	$stmt->execute(array($userID, false));
     $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
     return $row;
+}
+
+
+// trả về những người có mối quan hệ (gửi lời mời, theo dõi, bạn bè)
+function totalUserRela($userID){
+	global $db;
+	$arrID = array(1);
+	array_pop($arrID);
+
+    // những người gửi lời mời cho mình, dù đã hay chưa chấp nhận
+	$stmt = $db->prepare("	SELECT userIDSend
+							FROM friends 
+							WHERE 	userIDRecive=?");
+	$stmt->execute(array($userID));
+    $row1 = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	foreach ($row1 as $r) {
+		array_push($arrID, $r['userIDSend']);
+    }    
+
+    // những người mình gửi lời mời cho họ
+	$stmt = $db->prepare("	SELECT userIDRecive
+							FROM friends 
+							WHERE 	userIDSend=?");
+	$stmt->execute(array($userID));
+    $row2 = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	foreach ($row2 as $r) {
+		array_push($arrID, $r['userIDRecive']);
+    }    
+    
+
+    // những người họ theo dõi mình
+	$stmt = $db->prepare("	SELECT follower
+							FROM follows 
+							WHERE userID=?");
+	$stmt->execute(array($userID));
+    $row3 = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	foreach ($row3 as $r) {
+		array_push($arrID, $r['follower']);
+    }    
+
+    // những người mình theo dõi
+	$stmt = $db->prepare("	SELECT userID
+							FROM follows 
+							WHERE follower=?");
+	$stmt->execute(array($userID));
+    $row4 = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	foreach ($row4 as $r) {
+		array_push($arrID, $r['userID']);
+    }    
+
+    // lọc hết những id trùng
+    $row = array_unique($arrID);
+
+    return $row;	
 }
 
 // kiểm tra hai người có là bạn của nhau không
